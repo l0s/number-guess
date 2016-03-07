@@ -1,0 +1,16 @@
+{
+  "intents": [
+  	{
+  	  "intent": "StartGameIntent"
+  	},
+  	{
+  	  "intent": "ProvideGuessIntent",
+  	  "slots": [
+  	    {
+  	      "name": "Guess",
+  	      "type": "AMAZON.NUMBER"
+  	    }
+  	  ]
+  	}
+  ]
+}

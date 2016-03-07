@@ -1,0 +1,5 @@
+src/main/resources/secrets.properties
+target
+.classpath
+.settings
+.project

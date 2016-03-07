@@ -1,0 +1,2 @@
+StartGameIntent i want to guess a number
+ProvideGuessIntent i think its {Guess}

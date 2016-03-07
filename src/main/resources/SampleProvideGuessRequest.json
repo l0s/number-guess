@@ -1,0 +1,26 @@
+{
+  "session": {
+    "sessionId": "sessionId",
+    "application": {
+      "applicationId": "${applicationId}"
+    },
+    "user": {
+      "userId": "userId"
+    },
+    "new": true
+  },
+  "request": {
+    "type": "IntentRequest",
+    "requestId": "requestId",
+    "timestamp": "2016-03-07T05:38:03Z",
+    "intent": {
+      "name": "ProvideGuessIntent",
+      "slots": {
+        "Guess": {
+          "name": "Guess",
+          "value": "7"
+        }
+      }
+    }
+  }
+}
