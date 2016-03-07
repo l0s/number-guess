@@ -14,7 +14,13 @@
     "requestId": "requestId",
     "timestamp": "2016-03-07T05:38:03Z",
     "intent": {
-      "name": "StartGameIntent"
+      "name": "ProvideGuessIntent",
+      "slots": {
+        "Guess": {
+          "name": "Guess",
+          "value": "7"
+        }
+      }
     }
   }
 }

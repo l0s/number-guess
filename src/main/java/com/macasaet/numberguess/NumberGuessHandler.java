@@ -26,7 +26,7 @@ public class NumberGuessHandler extends SpeechletRequestStreamHandler {
     static {
         final Properties secrets = new Properties();
         try {
-            try (final InputStream inputStream = NumberGuessHandler.class.getResourceAsStream("secrets.properties")) {
+            try (final InputStream inputStream = NumberGuessHandler.class.getResourceAsStream("/secrets.properties")) {
                 secrets.load(inputStream);
                 supportedApplicationIds = singleton(String.valueOf(secrets.get("applicationId")));
             }
