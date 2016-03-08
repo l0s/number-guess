@@ -3,6 +3,7 @@ package com.macasaet.numberguess;
 import static com.macasaet.numberguess.Intents.GUESS_NUMBER_INTENT;
 import static com.macasaet.numberguess.Intents.PROVIDE_FEEDBACK_INTENT;
 import static com.macasaet.numberguess.Intents.PROVIDE_GUESS;
+import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
 
@@ -26,11 +27,11 @@ public enum Slots {
         this.matchingIntents = matchingIntents;
     }
 
-    public String getName() {
+    protected String getName() {
         return name;
     }
 
-    public Intents[] getMatchingIntents() {
+    protected Intents[] getMatchingIntents() {
         return matchingIntents;
     }
 
@@ -40,6 +41,10 @@ public enum Slots {
             return slot.getValue();
         }
         return null;
+    }
+
+    public int getInt(final Intent intent) {
+        return parseInt(getValue(intent));
     }
 
 }

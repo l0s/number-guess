@@ -1,16 +1,29 @@
 package com.macasaet.numberguess;
 
-import static java.lang.Math.*;
-import static org.apache.commons.lang3.RandomUtils.*;
-import static com.amazon.speech.speechlet.SpeechletResponse.*;
-import static com.macasaet.numberguess.Intents.*;
-import static com.macasaet.numberguess.Slots.*;
+import static com.amazon.speech.speechlet.SpeechletResponse.newAskResponse;
+import static com.amazon.speech.speechlet.SpeechletResponse.newTellResponse;
+import static com.macasaet.numberguess.Intents.CONFIRM_GUESS_INTENT;
+import static com.macasaet.numberguess.Intents.GUESS_NUMBER_INTENT;
+import static com.macasaet.numberguess.Intents.PROVIDE_FEEDBACK_INTENT;
+import static com.macasaet.numberguess.Intents.PROVIDE_GUESS;
+import static com.macasaet.numberguess.Intents.START_GAME;
+import static com.macasaet.numberguess.Slots.GUESS;
+import static com.macasaet.numberguess.Slots.LOWER;
+import static com.macasaet.numberguess.Slots.RELATION;
+import static com.macasaet.numberguess.Slots.UPPER;
+import static com.macasaet.numberguess.speechlet.Attributes.EFFECTIVE_RANGE;
+import static com.macasaet.numberguess.speechlet.Attributes.GUESSES;
+import static com.macasaet.numberguess.speechlet.Attributes.LAST_GUESS;
+import static com.macasaet.numberguess.speechlet.Attributes.SPECIFIED_RANGE;
+import static com.macasaet.numberguess.speechlet.Attributes.TARGET_NUMBER;
 import static java.lang.Integer.parseInt;
-import static org.apache.commons.lang3.StringUtils.isNumeric;
+import static java.lang.Math.round;
+import static org.apache.commons.lang3.RandomUtils.nextInt;
 
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.lang3.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,105 +64,57 @@ public class NumberGuessSpeechlet implements Speechlet {
         return SpeechletResponse.newAskResponse(outputSpeech, reprompt);
     }
 
-    @SuppressWarnings("unchecked")
     public SpeechletResponse onIntent(final IntentRequest request, final Session session) throws SpeechletException {
-        // TODO Auto-generated method stub
         logger.info( "( onIntent: {}, {} )", request, session );
         final Intent intent = request.getIntent();
         if (START_GAME.matches(intent)) {
             final int targetNumber = nextInt(1, 10);
-            session.setAttribute("targetNumber", targetNumber);
-            final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-            outputSpeech.setText("I'm thinking of a number between one and ten inclusive. To guess, say I think it's");
-            final Reprompt reprompt = new Reprompt();
-            reprompt.setOutputSpeech(outputSpeech);
-            return newAskResponse(outputSpeech, reprompt);
+            TARGET_NUMBER.setInt(session, targetNumber);
+            return createAskResponse("I'm thinking of a number between one and ten inclusive. To guess, say I think it's");
         } else if (PROVIDE_GUESS.matches(intent)) {
             final String guessString = GUESS.getValue(intent);
-            if (!isNumeric(guessString)) {
-                // FIXME: we really should support numbers that have non-numeric
-                // characters
-                throw new SpeechletException("Invalid guess: " + guessString);
-            }
-            final int guess = parseInt(guessString);
-            final int targetNumber = (int)session.getAttribute("targetNumber");
-            if (guess == targetNumber) {
-                final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-                outputSpeech.setText("You guessed correctly. I was thinking of " + targetNumber);
-                return newTellResponse(outputSpeech);
-            } else if (guess > targetNumber) {
-                final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-                outputSpeech.setText("Sorry, " + guess + " is too high. Try again.");
-                final Reprompt reprompt = new Reprompt();
-                reprompt.setOutputSpeech(outputSpeech);
-                return newAskResponse(outputSpeech, reprompt);
-            }
-            final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-            outputSpeech.setText("Sorry, " + guess + " is too low. Try again.");
-            final Reprompt reprompt = new Reprompt();
-            reprompt.setOutputSpeech(outputSpeech);
-            return newAskResponse(outputSpeech, reprompt);
-        } else if (GUESS_NUMBER_INTENT.matches(intent)) {
-            final String lowerString = LOWER.getValue(intent);
-            final String upperString = UPPER.getValue(intent);
             // TODO validation
-            final int lower = parseInt(lowerString);
-            final int upper = parseInt(upperString);
+            final int guess = parseInt(guessString);
+            final int targetNumber = TARGET_NUMBER.getInt(session);
+            if (guess == targetNumber) {
+                return createTellResponse("You guessed correctly. I was thinking of " + targetNumber);
+            } else if (guess > targetNumber) {
+                return createAskResponse("Sorry, " + guess + " is too high. Try again.");
+            }
+            return createAskResponse("Sorry, " + guess + " is too low. Try again.");
+        } else if (GUESS_NUMBER_INTENT.matches(intent)) {
+            // TODO validation: { integers | valid range }
+            final int lower = LOWER.getInt(intent);
+            final int upper = UPPER.getInt(intent);
+            final Range<Integer> effectiveRange = Range.between(lower, upper);
 
-            final int guess = round( ( upper - lower ) / 2.0f ) + lower;
+            final int guess = guess(effectiveRange);
             final List<Integer> guesses = new LinkedList<>();
             guesses.add(guess);
+            GUESSES.setIntList(session, guesses);
 
-            session.setAttribute("specifiedLower", lower); // FIXME use Range
-            session.setAttribute("specifiedUpper", upper);
-            session.setAttribute("effectiveLower", lower); // FIXME use Range
-            session.setAttribute("effectiveUpper", upper);
-            session.setAttribute("guesses", guesses);
-            session.setAttribute("lastGuess", guess);
+            SPECIFIED_RANGE.setIntRange(session, effectiveRange);
 
-            final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-            outputSpeech.setText("Is it " + guess + "?");
-            final Reprompt reprompt = new Reprompt();
-            reprompt.setOutputSpeech(outputSpeech);
-            return newAskResponse(outputSpeech, reprompt);
+            EFFECTIVE_RANGE.setIntRange(session, effectiveRange);
+            LAST_GUESS.setInt(session, guess);
+            return createAskResponse("Is it " + guess + "?");
         } else if (PROVIDE_FEEDBACK_INTENT.matches(intent)) {
-            // FIXME
-            final int lastGuess = (int)session.getAttribute("lastGuess");
-            final String relation = RELATION.getValue(intent); // FIXME enum
-            if ("high".equalsIgnoreCase(relation)) {
-                final int effectiveLower = (int) session.getAttribute("effectiveLower");
-                final int effectiveUpper = lastGuess;
+            final int lastGuess = LAST_GUESS.getInt(session);
+            final String relation = RELATION.getValue(intent);
+            final Range<Integer> effectiveRange =
+                    "high".equalsIgnoreCase(relation)
+                    ? Range.between(EFFECTIVE_RANGE.getIntRange(session).getMinimum(), lastGuess)
+                    : Range.between(lastGuess, EFFECTIVE_RANGE.getIntRange(session).getMaximum());
 
-                final int guess = round((effectiveUpper - effectiveLower) / 2.0f) + effectiveLower;
-                session.setAttribute("effectiveLower", effectiveLower);
-                session.setAttribute("effectiveUpper", effectiveUpper);
-                ((List<Integer>) session.getAttribute("guesses")).add(guess);
-                session.setAttribute("lastGuess", guess);
-                final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-                outputSpeech.setText("Is it " + guess + "?");
-                final Reprompt reprompt = new Reprompt();
-                reprompt.setOutputSpeech(outputSpeech);
-                return newAskResponse(outputSpeech, reprompt);
-            } else if ("low".equalsIgnoreCase(relation)) {
-                final int effectiveLower = lastGuess;
-                final int effectiveUpper = (int) session.getAttribute("effectiveUpper");
+            final int guess = guess(effectiveRange);
 
-                final int guess = round((effectiveUpper - effectiveLower) / 2.0f) + effectiveLower;
-                session.setAttribute("effectiveLower", effectiveLower);
-                session.setAttribute("effectiveUpper", effectiveUpper);
-                ((List<Integer>) session.getAttribute("guesses")).add(guess);
-                session.setAttribute("lastGuess", guess);
-                final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-                outputSpeech.setText("Is it " + guess + "?");
-                final Reprompt reprompt = new Reprompt();
-                reprompt.setOutputSpeech(outputSpeech);
-                return newAskResponse(outputSpeech, reprompt);
-            }
-            throw new SpeechletException("Invalid relation: " + relation);
+            GUESSES.getIntList(session).add(guess);
+
+            EFFECTIVE_RANGE.setIntRange(session, effectiveRange);            
+            LAST_GUESS.setInt(session, guess);
+            return createAskResponse("Is it " + guess + "?");
         } else if (CONFIRM_GUESS_INTENT.matches(intent)) {
-            final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-            outputSpeech.setText("Thank you, that was fun!");
-            return newTellResponse(outputSpeech);
+            return createTellResponse("Thank you, that was fun!");
         }
         throw new SpeechletException("Invalid intent: " + intent.getName());
     }
@@ -157,6 +122,24 @@ public class NumberGuessSpeechlet implements Speechlet {
     public void onSessionEnded(final SessionEndedRequest request, final Session session) throws SpeechletException {
         // TODO Auto-generated method stub
         logger.info( "( onSessionEnded: {}, {} )", request, session );
+    }
+
+    protected int guess(final Range<Integer> range) {
+        return round((range.getMaximum() - range.getMinimum()) / 2.0f) + range.getMinimum();
+    }
+
+    protected SpeechletResponse createTellResponse(final String text) {
+        final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
+        outputSpeech.setText(text);
+        return newTellResponse(outputSpeech);
+    }
+
+    protected SpeechletResponse createAskResponse(final String text) {
+        final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
+        outputSpeech.setText(text);
+        final Reprompt reprompt = new Reprompt();
+        reprompt.setOutputSpeech(outputSpeech);
+        return newAskResponse(outputSpeech, reprompt);
     }
 
 }

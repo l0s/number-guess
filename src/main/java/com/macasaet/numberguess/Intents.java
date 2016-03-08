@@ -40,7 +40,7 @@ public enum Intents {
         this.name = name;
     }
 
-    public String getName() {
+    protected String getName() {
         return name;
     }
 
