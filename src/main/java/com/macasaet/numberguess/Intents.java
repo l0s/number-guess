@@ -12,8 +12,26 @@ import com.amazon.speech.slu.Intent;
  */
 public enum Intents {
 
+    /**
+     * Indication that the user wants to guess a number.
+     */
     START_GAME("StartGameIntent"),
-    PROVIDE_GUESS("ProvideGuessIntent");
+    /**
+     * User's guess as to what the number is.
+     */
+    PROVIDE_GUESS("ProvideGuessIntent"),
+    /**
+     * Indication that the user wants the system to guess a number.
+     */
+    GUESS_NUMBER_INTENT("GuessNumberIntent"),
+    /**
+     * User's feedback about whether the system's guess is too high or low.
+     */
+    PROVIDE_FEEDBACK_INTENT("ProvideFeedbackIntent"),
+    /**
+     * User's indication that the system guessed the correct number.
+     */
+    CONFIRM_GUESS_INTENT("ConfirmGuessIntent");
 
     private final String name;
 

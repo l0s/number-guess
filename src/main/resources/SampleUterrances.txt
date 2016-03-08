@@ -1,2 +1,16 @@
 StartGameIntent i want to guess a number
 ProvideGuessIntent i think its {Guess}
+GuessNumberIntent im thinking of a number between {Lower} and {Upper}
+ProvideFeedbackIntent no that is too {Relation}
+ProvideFeedbackIntent that is too {Relation}
+ProvideFeedbackIntent no thats too {Relation}
+ProvideFeedbackIntent thats too {Relation}
+ProvideFeedbackIntent no too {Relation}
+ProvideFeedbackIntent too {Relation}
+ConfirmGuessIntent yes that is it
+ConfirmGuessIntent yep that is it
+ConfirmGuessIntent that is it
+ConfirmGuessIntent yes thats it
+ConfirmGuessIntent yep thats it
+ConfirmGuessIntent thats it
+ConfirmGuessIntent you guessed it

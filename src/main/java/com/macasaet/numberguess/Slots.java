@@ -1,5 +1,7 @@
 package com.macasaet.numberguess;
 
+import static com.macasaet.numberguess.Intents.GUESS_NUMBER_INTENT;
+import static com.macasaet.numberguess.Intents.PROVIDE_FEEDBACK_INTENT;
 import static com.macasaet.numberguess.Intents.PROVIDE_GUESS;
 import static org.apache.commons.lang3.Validate.notEmpty;
 import static org.apache.commons.lang3.Validate.notNull;
@@ -9,7 +11,10 @@ import com.amazon.speech.slu.Slot;
 
 public enum Slots {
 
-    GUESS("Guess", PROVIDE_GUESS);
+    GUESS("Guess", PROVIDE_GUESS),
+    LOWER("Lower", GUESS_NUMBER_INTENT),
+    UPPER("Upper", GUESS_NUMBER_INTENT),
+    RELATION("Relation", PROVIDE_FEEDBACK_INTENT);
 
     private final String name;
     private final Intents[] matchingIntents;

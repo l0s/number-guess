@@ -1,11 +1,15 @@
 package com.macasaet.numberguess;
 
+import static java.lang.Math.*;
 import static org.apache.commons.lang3.RandomUtils.*;
 import static com.amazon.speech.speechlet.SpeechletResponse.*;
 import static com.macasaet.numberguess.Intents.*;
-import static com.macasaet.numberguess.Slots.GUESS;
+import static com.macasaet.numberguess.Slots.*;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
+
+import java.util.LinkedList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +51,7 @@ public class NumberGuessSpeechlet implements Speechlet {
         return SpeechletResponse.newAskResponse(outputSpeech, reprompt);
     }
 
+    @SuppressWarnings("unchecked")
     public SpeechletResponse onIntent(final IntentRequest request, final Session session) throws SpeechletException {
         // TODO Auto-generated method stub
         logger.info( "( onIntent: {}, {} )", request, session );
@@ -84,6 +89,67 @@ public class NumberGuessSpeechlet implements Speechlet {
             final Reprompt reprompt = new Reprompt();
             reprompt.setOutputSpeech(outputSpeech);
             return newAskResponse(outputSpeech, reprompt);
+        } else if (GUESS_NUMBER_INTENT.matches(intent)) {
+            final String lowerString = LOWER.getValue(intent);
+            final String upperString = UPPER.getValue(intent);
+            // TODO validation
+            final int lower = parseInt(lowerString);
+            final int upper = parseInt(upperString);
+
+            final int guess = round( ( upper - lower ) / 2.0f ) + lower;
+            final List<Integer> guesses = new LinkedList<>();
+            guesses.add(guess);
+
+            session.setAttribute("specifiedLower", lower); // FIXME use Range
+            session.setAttribute("specifiedUpper", upper);
+            session.setAttribute("effectiveLower", lower); // FIXME use Range
+            session.setAttribute("effectiveUpper", upper);
+            session.setAttribute("guesses", guesses);
+            session.setAttribute("lastGuess", guess);
+
+            final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
+            outputSpeech.setText("Is it " + guess + "?");
+            final Reprompt reprompt = new Reprompt();
+            reprompt.setOutputSpeech(outputSpeech);
+            return newAskResponse(outputSpeech, reprompt);
+        } else if (PROVIDE_FEEDBACK_INTENT.matches(intent)) {
+            // FIXME
+            final int lastGuess = (int)session.getAttribute("lastGuess");
+            final String relation = RELATION.getValue(intent); // FIXME enum
+            if ("high".equalsIgnoreCase(relation)) {
+                final int effectiveLower = (int) session.getAttribute("effectiveLower");
+                final int effectiveUpper = lastGuess;
+
+                final int guess = round((effectiveUpper - effectiveLower) / 2.0f) + effectiveLower;
+                session.setAttribute("effectiveLower", effectiveLower);
+                session.setAttribute("effectiveUpper", effectiveUpper);
+                ((List<Integer>) session.getAttribute("guesses")).add(guess);
+                session.setAttribute("lastGuess", guess);
+                final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
+                outputSpeech.setText("Is it " + guess + "?");
+                final Reprompt reprompt = new Reprompt();
+                reprompt.setOutputSpeech(outputSpeech);
+                return newAskResponse(outputSpeech, reprompt);
+            } else if ("low".equalsIgnoreCase(relation)) {
+                final int effectiveLower = lastGuess;
+                final int effectiveUpper = (int) session.getAttribute("effectiveUpper");
+
+                final int guess = round((effectiveUpper - effectiveLower) / 2.0f) + effectiveLower;
+                session.setAttribute("effectiveLower", effectiveLower);
+                session.setAttribute("effectiveUpper", effectiveUpper);
+                ((List<Integer>) session.getAttribute("guesses")).add(guess);
+                session.setAttribute("lastGuess", guess);
+                final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
+                outputSpeech.setText("Is it " + guess + "?");
+                final Reprompt reprompt = new Reprompt();
+                reprompt.setOutputSpeech(outputSpeech);
+                return newAskResponse(outputSpeech, reprompt);
+            }
+            throw new SpeechletException("Invalid relation: " + relation);
+        } else if (CONFIRM_GUESS_INTENT.matches(intent)) {
+            final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
+            outputSpeech.setText("Thank you, that was fun!");
+            return newTellResponse(outputSpeech);
         }
         throw new SpeechletException("Invalid intent: " + intent.getName());
     }
