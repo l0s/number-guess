@@ -9,17 +9,39 @@ import org.apache.commons.lang3.Range;
 
 import com.amazon.speech.speechlet.Session;
 
-public enum Attributes {
+/**
+ * Type-safe enumeration of session attributes.
+ *
+ * <p>Copyright &copy; 2016 Carlos Macasaet.</p>
+ *
+ * @author Carlos Macasaet
+ */
+public enum SessionAttribute {
 
+    /**
+     * The number the system chose and the user is trying to guess
+     */
     TARGET_NUMBER("targetNumber"),
+    /**
+     * The user-specified bounds for the game
+     */
     SPECIFIED_RANGE("specifiedRange"),
+    /**
+     * The narrowed search range determined by the system
+     */
     EFFECTIVE_RANGE("effectiveRange"),
+    /**
+     * The history of guesses the system made
+     */
     GUESSES("guesses"),
+    /**
+     * The last guess the system made
+     */
     LAST_GUESS("lastGuess");
 
     private final String name;
 
-    private Attributes(final String name) {
+    private SessionAttribute(final String name) {
         notEmpty(name, "name must be specified");
         this.name = name;
     }

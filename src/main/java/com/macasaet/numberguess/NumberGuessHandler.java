@@ -11,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazon.speech.speechlet.lambda.SpeechletRequestStreamHandler;
+import com.macasaet.numberguess.speechlet.NumberGuessSpeechlet;
 
 /**
- * 
+ * Entry point into the Number Guessing Lambda function.
+ *
  * <p>Copyright &copy; 2016 Carlos Macasaet.</p>
  *
  * @author Carlos Macasaet

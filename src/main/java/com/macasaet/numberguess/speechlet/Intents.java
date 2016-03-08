@@ -1,11 +1,12 @@
-package com.macasaet.numberguess;
+package com.macasaet.numberguess.speechlet;
 
 import static org.apache.commons.lang3.Validate.notEmpty;
 
 import com.amazon.speech.slu.Intent;
 
 /**
- * 
+ * Type-safe enumeration of the supported user intents.
+ *
  * <p>Copyright &copy; 2016 Carlos Macasaet.</p>
  *
  * @author Carlos Macasaet
