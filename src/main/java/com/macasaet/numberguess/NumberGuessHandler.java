@@ -1,9 +1,11 @@
 package com.macasaet.numberguess;
 
-import static java.util.Collections.singleton;
+import static java.util.Arrays.asList;
+import static java.util.Collections.unmodifiableSet;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashSet;
 import java.util.Properties;
 import java.util.Set;
 
@@ -30,7 +32,8 @@ public class NumberGuessHandler extends SpeechletRequestStreamHandler {
         try {
             try (final InputStream inputStream = NumberGuessHandler.class.getResourceAsStream("/secrets.properties")) {
                 secrets.load(inputStream);
-                supportedApplicationIds = singleton(String.valueOf(secrets.get("applicationId")));
+                final String appIdsString = String.valueOf(secrets.get("applicationId"));
+                supportedApplicationIds = unmodifiableSet(new HashSet<>(asList(appIdsString.split(","))));
             }
         } catch (final IOException ioe) {
             final String message = "Error loading secrets: " + ioe.getMessage();

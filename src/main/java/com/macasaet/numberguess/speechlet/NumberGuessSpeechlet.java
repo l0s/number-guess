@@ -2,21 +2,20 @@ package com.macasaet.numberguess.speechlet;
 
 import static com.amazon.speech.speechlet.SpeechletResponse.newAskResponse;
 import static com.amazon.speech.speechlet.SpeechletResponse.newTellResponse;
-import static com.macasaet.numberguess.speechlet.SessionAttribute.EFFECTIVE_RANGE;
-import static com.macasaet.numberguess.speechlet.SessionAttribute.GUESSES;
-import static com.macasaet.numberguess.speechlet.SessionAttribute.LAST_GUESS;
-import static com.macasaet.numberguess.speechlet.SessionAttribute.SPECIFIED_RANGE;
-import static com.macasaet.numberguess.speechlet.SessionAttribute.TARGET_NUMBER;
 import static com.macasaet.numberguess.speechlet.Intents.CONFIRM_GUESS_INTENT;
 import static com.macasaet.numberguess.speechlet.Intents.GUESS_NUMBER_INTENT;
 import static com.macasaet.numberguess.speechlet.Intents.PROVIDE_FEEDBACK_INTENT;
 import static com.macasaet.numberguess.speechlet.Intents.PROVIDE_GUESS;
 import static com.macasaet.numberguess.speechlet.Intents.START_GAME;
+import static com.macasaet.numberguess.speechlet.SessionAttribute.EFFECTIVE_RANGE;
+import static com.macasaet.numberguess.speechlet.SessionAttribute.GUESSES;
+import static com.macasaet.numberguess.speechlet.SessionAttribute.LAST_GUESS;
+import static com.macasaet.numberguess.speechlet.SessionAttribute.SPECIFIED_RANGE;
+import static com.macasaet.numberguess.speechlet.SessionAttribute.TARGET_NUMBER;
 import static com.macasaet.numberguess.speechlet.Slots.GUESS;
 import static com.macasaet.numberguess.speechlet.Slots.LOWER;
 import static com.macasaet.numberguess.speechlet.Slots.RELATION;
 import static com.macasaet.numberguess.speechlet.Slots.UPPER;
-import static java.lang.Integer.parseInt;
 import static java.lang.Math.round;
 import static org.apache.commons.lang3.RandomUtils.nextInt;
 
@@ -24,8 +23,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.commons.lang3.Range;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.amazon.speech.slu.Intent;
 import com.amazon.speech.speechlet.IntentRequest;
@@ -47,34 +44,21 @@ import com.amazon.speech.ui.Reprompt;
  */
 public class NumberGuessSpeechlet implements Speechlet {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     public void onSessionStarted(final SessionStartedRequest request, final Session session) throws SpeechletException {
-        // TODO Auto-generated method stub
-        logger.info( "( onSessionStarted: {}, {} )", request, session );
     }
 
     public SpeechletResponse onLaunch(final LaunchRequest request, final Session session) throws SpeechletException {
-        // TODO Auto-generated method stub
-        logger.info( "( onLaunch: {}, {} )", request, session );
-        final PlainTextOutputSpeech outputSpeech = new PlainTextOutputSpeech();
-        outputSpeech.setText("Welcome!");
-        final Reprompt reprompt = new Reprompt();
-        reprompt.setOutputSpeech(outputSpeech);
-        return SpeechletResponse.newAskResponse(outputSpeech, reprompt);
+        return createAskResponse("Hello! If you want me to think of a number for you to guess, say \" I want to guess a number\". If you want me to guess a number say, \"I'm thinking of a number between\".");
     }
 
     public SpeechletResponse onIntent(final IntentRequest request, final Session session) throws SpeechletException {
-        logger.info( "( onIntent: {}, {} )", request, session );
         final Intent intent = request.getIntent();
         if (START_GAME.matches(intent)) {
             final int targetNumber = nextInt(1, 10);
             TARGET_NUMBER.setInt(session, targetNumber);
             return createAskResponse("I'm thinking of a number between one and ten inclusive. To guess, say I think it's");
         } else if (PROVIDE_GUESS.matches(intent)) {
-            final String guessString = GUESS.getValue(intent);
-            // TODO validation
-            final int guess = parseInt(guessString);
+            final int guess = GUESS.getInt(intent);
             final int targetNumber = TARGET_NUMBER.getInt(session);
             if (guess == targetNumber) {
                 return createTellResponse("You guessed correctly. I was thinking of " + targetNumber);
@@ -116,12 +100,10 @@ public class NumberGuessSpeechlet implements Speechlet {
         } else if (CONFIRM_GUESS_INTENT.matches(intent)) {
             return createTellResponse("Thank you, that was fun!");
         }
-        throw new SpeechletException("Invalid intent: " + intent.getName());
+        return createAskResponse("Hello! If you want me to think of a number for you to guess, say \" I want to guess a number\". If you want me to guess a number say, \"I'm thinking of a number between\".");
     }
 
     public void onSessionEnded(final SessionEndedRequest request, final Session session) throws SpeechletException {
-        // TODO Auto-generated method stub
-        logger.info( "( onSessionEnded: {}, {} )", request, session );
     }
 
     protected int guess(final Range<Integer> range) {
