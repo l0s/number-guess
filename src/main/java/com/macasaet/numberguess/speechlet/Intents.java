@@ -14,6 +14,18 @@ import com.amazon.speech.slu.Intent;
 public enum Intents {
 
     /**
+     * Amazon built-in help intent
+     */
+    HELP_INTENT("AMAZON.HelpIntent"),
+    /**
+     * Amazon built-in stop intent
+     */
+    STOP_INTENT("AMAZON.StopIntent"),
+    /**
+     * Amazon built-in cancel intent
+     */
+    CANCEL_INTENT("AMAZON.CancelIntent"),
+    /**
      * Indication that the user wants to guess a number.
      */
     START_GAME("StartGameIntent"),

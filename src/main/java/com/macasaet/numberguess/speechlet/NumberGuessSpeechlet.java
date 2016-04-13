@@ -3,7 +3,7 @@ package com.macasaet.numberguess.speechlet;
 import static com.amazon.speech.speechlet.SpeechletResponse.newAskResponse;
 import static com.amazon.speech.speechlet.SpeechletResponse.newTellResponse;
 import static com.macasaet.numberguess.speechlet.Intents.CONFIRM_GUESS_INTENT;
-import static com.macasaet.numberguess.speechlet.Intents.GUESS_NUMBER_INTENT;
+import static com.macasaet.numberguess.speechlet.Intents.*;
 import static com.macasaet.numberguess.speechlet.Intents.PROVIDE_FEEDBACK_INTENT;
 import static com.macasaet.numberguess.speechlet.Intents.PROVIDE_GUESS;
 import static com.macasaet.numberguess.speechlet.Intents.START_GAME;
@@ -37,7 +37,8 @@ import com.amazon.speech.ui.PlainTextOutputSpeech;
 import com.amazon.speech.ui.Reprompt;
 
 /**
- * 
+ * Main logic for both game modes.
+ *
  * <p>Copyright &copy; 2016 Carlos Macasaet.</p>
  *
  * @author Carlos Macasaet
@@ -48,12 +49,16 @@ public class NumberGuessSpeechlet implements Speechlet {
     }
 
     public SpeechletResponse onLaunch(final LaunchRequest request, final Session session) throws SpeechletException {
-        return createAskResponse("Hello! If you want me to think of a number for you to guess, say \" I want to guess a number\". If you want me to guess a number say, \"I'm thinking of a number between\".");
+        return createHelpResponse();
     }
 
     public SpeechletResponse onIntent(final IntentRequest request, final Session session) throws SpeechletException {
         final Intent intent = request.getIntent();
-        if (START_GAME.matches(intent)) {
+        if (HELP_INTENT.matches(intent)) {
+            return createHelpResponse();
+        } else if (STOP_INTENT.matches(intent) || CANCEL_INTENT.matches(intent)) {
+            return createTellResponse("Goodbye!");
+        } else if (START_GAME.matches(intent)) {
             final int targetNumber = nextInt(1, 10);
             TARGET_NUMBER.setInt(session, targetNumber);
             return createAskResponse("I'm thinking of a number between one and ten inclusive. To guess, say I think it's");
@@ -100,7 +105,7 @@ public class NumberGuessSpeechlet implements Speechlet {
         } else if (CONFIRM_GUESS_INTENT.matches(intent)) {
             return createTellResponse("Thank you, that was fun!");
         }
-        return createAskResponse("Hello! If you want me to think of a number for you to guess, say \" I want to guess a number\". If you want me to guess a number say, \"I'm thinking of a number between\".");
+        throw new SpeechletException("Unrecognised intent: " + intent.getName());
     }
 
     public void onSessionEnded(final SessionEndedRequest request, final Session session) throws SpeechletException {
@@ -108,6 +113,10 @@ public class NumberGuessSpeechlet implements Speechlet {
 
     protected int guess(final Range<Integer> range) {
         return round((range.getMaximum() - range.getMinimum()) / 2.0f) + range.getMinimum();
+    }
+
+    protected SpeechletResponse createHelpResponse() {
+        return createAskResponse("Hello! If you want me to think of a number for you to guess, say \" I want to guess a number\". If you want me to guess a number say, \"I'm thinking of a number between\".");
     }
 
     protected SpeechletResponse createTellResponse(final String text) {
