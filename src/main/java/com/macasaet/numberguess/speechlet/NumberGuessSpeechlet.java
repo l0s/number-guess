@@ -55,7 +55,10 @@ public class NumberGuessSpeechlet implements Speechlet {
     public SpeechletResponse onIntent(final IntentRequest request, final Session session) throws SpeechletException {
         final Intent intent = request.getIntent();
         if (HELP_INTENT.matches(intent)) {
-            return createHelpResponse();
+            return createAskResponse("I have two modes. "
+                    + "I can think of a number for you to guess or you can think of a number for me to guess. "
+                    + "If you want to guess, say \"I want to guess a number\". "
+                    + "If you want me to guess, think of a number, then say, \"I'm thinking of a number between X and Y\" where X is less than the number and Y is greater than the number.");
         } else if (STOP_INTENT.matches(intent) || CANCEL_INTENT.matches(intent)) {
             return createTellResponse("Goodbye!");
         } else if (START_GAME.matches(intent)) {
@@ -116,7 +119,7 @@ public class NumberGuessSpeechlet implements Speechlet {
     }
 
     protected SpeechletResponse createHelpResponse() {
-        return createAskResponse("Hello! If you want me to think of a number for you to guess, say \" I want to guess a number\". If you want me to guess a number say, \"I'm thinking of a number between\".");
+        return createAskResponse("Hello! If you want me to think of a number for you to guess, say \"I want to guess a number\". If you want me to guess a number say, \"I'm thinking of a number between\".");
     }
 
     protected SpeechletResponse createTellResponse(final String text) {
